@@ -1,0 +1,91 @@
+\documentclass{llncs}
+\usepackage[utf8]{inputenc}
+
+\title{Random Forests}
+\author{Joanna Grzyb}
+\date{February 2022}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Accuracy$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_ACC_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Balanced Accuracy$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_BAC_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $F1score$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_F1score_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Gmean$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_Gmean_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Precision$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_Precision_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Recall$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_Recall_experiment0}
+\end{tabular}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\caption{Results -- $Specificity$}
+\begin{tabular}{r c c c c c}
+  \hline
+\textbf{ID} & \textbf{DT} & \textbf{RandomFS} & \textbf{randomforest} & \textbf{RFDT} & \textbf{RF sklearn}\\
+    \hline
+    \input{../results/experiment0/tables/results_Specificity_experiment0}
+\end{tabular}
+\end{table}
+
+\end{document}
