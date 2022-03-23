@@ -23,6 +23,8 @@ from methods.randomforest_DT import RandomForestClassifier_alt_DT
 
 from sklearn.feature_selection import SelectFromModel
 
+from methods.SOORF_DT import SingleObjectiveOptimizationRandomForest_DecisionTree
+
 """
 Datasets are from KEEL repository.
 """
@@ -33,17 +35,33 @@ base_estimator = DecisionTreeClassifier(random_state=1234)
 tree = DecisionTreeClassifier(max_features="sqrt", criterion="entropy")
 n_proccess = 4
 methods = {
-    "DT":
-        DecisionTreeClassifier(random_state=1234),
-    "RandomFS":
-        RandomFS(base_classifier=tree, n_classifiers=10, bootstrap=True),
-    "randomforest":
+    # "DT":
+    #     DecisionTreeClassifier(random_state=1234),
+    # "RandomFS":
+    #     RandomFS(base_classifier=tree, n_classifiers=10, bootstrap=True),
+    # "randomforest":
+    #     RandomForestClassifier_alt(n_estimators=10, bootstrapping=False),
+    "randomforest_TRUE":
         RandomForestClassifier_alt(n_estimators=10, bootstrapping=True),
-    "RFDT":
-        RandomForestClassifier_alt_DT(base_classifier=tree, n_estimators=10, bootstrapping=True),
-    "RF":
-        RandomForestClassifier(random_state=0, n_estimators=10, bootstrap=True, max_features="sqrt", criterion="entropy"),
+    # "RFDT":
+    #     RandomForestClassifier_alt_DT(base_classifier=tree, n_estimators=10, bootstrapping=True),
+    # "RF":
+    #     RandomForestClassifier(random_state=0, n_estimators=10, bootstrap=True, max_features="sqrt", criterion="entropy"),
+    # "SOORF_DT0":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0, bootstrap=False),
+    # "SOORF_DT25":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
+    # "SOORF_DT50":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.5, bootstrap=False),
+    # "SOORF_DT75":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.75, bootstrap=False),
+    # "SOORF_DT90":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
+    "SOORF_DT":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
 }
+# test_size to parametr który zawiera informację jaka cześć zbioru X jest przeznaczona na testowanie. gdy test_size=0, wtedy jest overfitting
+# randomforest z bootstrappingiem i bez, nie ma dużej różnicy
 
 # Repeated Stratified K-Fold cross validator
 n_splits = 2
@@ -51,8 +69,8 @@ n_repeats = 5
 rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=0)
 n_folds = n_splits * n_repeats
 
-DATASETS_DIR = "datasets/"
-# DATASETS_DIR = "d/"
+# DATASETS_DIR = "datasets/"
+DATASETS_DIR = "d/"
 dataset_paths = []
 for root, _, files in os.walk(DATASETS_DIR):
     print(root, files)
@@ -103,15 +121,22 @@ def compute(dataset_id, dataset_path):
         for fold_id, (train, test) in enumerate(rskf.split(X, y)):
             X_train, X_test = X[train], X[test]
             y_train, y_test = y[train], y[test]
+            selected_features_indx_RF = None
             for clf_id, clf_name in enumerate(methods):
                 start_method = time.time()
                 clf = clone(methods[clf_name])
+                if clf_name == "SOORF_DT":
+                    clf.set_init_pop(X_train, selected_features_indx_RF)
                 clf.fit(X_train, y_train)
                 y_pred = clf.predict(X_test)
                 # if clf_name == "RF":
                 #     model = SelectFromModel(clf, prefit=True)
                 #     X_new = model.transform(X)
                 #     print(X_new.shape)
+                if clf_name == "randomforest_TRUE":
+                    selected_features_indx_RF = clf.selected_features_indx
+                else:
+                    selected_features_indx_RF = None
 
                 # Scores for each metric
                 for metric_id, metric in enumerate(metrics):
@@ -123,11 +148,11 @@ def compute(dataset_id, dataset_path):
                     # print("%d, %s, %s" % (fold_id, clf_name, metric))
                     # print(scores[metric_id, clf_id, fold_id])
                 # Diversity
-                calculate_diversity = getattr(clf, "calculate_diversity", None)
-                if callable(calculate_diversity):
-                    diversity[clf_id, fold_id] = clf.calculate_diversity()
-                else:
-                    diversity[clf_id, fold_id] = None
+                # calculate_diversity = getattr(clf, "calculate_diversity", None)
+                # if callable(calculate_diversity):
+                #     diversity[clf_id, fold_id] = clf.calculate_diversity()
+                # else:
+                #     diversity[clf_id, fold_id] = None
                 # print(diversity[clf_id, fold_id])
 
                 end_method = time.time() - start_method
@@ -143,10 +168,10 @@ def compute(dataset_id, dataset_path):
                     os.makedirs("results/experiment0/raw_results/%s/%s/" % (metric, dataset_name))
                 np.savetxt(fname=filename, fmt="%f", X=scores[metric_id, clf_id, :])
             # Save diversity results
-            filename = "results/experiment0/diversity_results/%s/%s_diversity.csv" % (dataset_name, clf_name)
-            if not os.path.exists("results/experiment0/diversity_results/%s/" % (dataset_name)):
-                os.makedirs("results/experiment0/diversity_results/%s/" % (dataset_name))
-            np.savetxt(fname=filename, fmt="%f", X=diversity[clf_id, :, :])
+            # filename = "results/experiment0/diversity_results/%s/%s_diversity.csv" % (dataset_name, clf_name)
+            # if not os.path.exists("results/experiment0/diversity_results/%s/" % (dataset_name)):
+            #     os.makedirs("results/experiment0/diversity_results/%s/" % (dataset_name))
+            # np.savetxt(fname=filename, fmt="%f", X=diversity[clf_id, :, :])
 
         end = time.time() - start
         logging.info("DONE - %s (Time: %d [s])" % (dataset_path, end))

@@ -8,7 +8,7 @@ from EnsembleDiversityTests.EnsembleDiversityTests import DiversityTests
 
 
 class Optimization(ElementwiseProblem):
-    def __init__(self, X, y, test_size, estimator, n_features, metric_name, alpha, objectives=1, n_classifiers=10, **kwargs):
+    def __init__(self, X, y, test_size, estimator, n_features, metric_name, alpha, max_features, objectives=1, n_classifiers=10, **kwargs):
         self.estimator = estimator
         self.test_size = test_size
         self.objectives = objectives
@@ -19,11 +19,12 @@ class Optimization(ElementwiseProblem):
         self.classes_, _ = np.unique(self.y, return_inverse=True)
         self.metric_name = metric_name
         self.alpha = alpha
+        self.max_features = max_features
         # self.models = {}
 
-        self.test_size = 0
+        # self.test_size = 0
         if self.test_size != 0:
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=self.test_size, stratify=self.y)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=self.test_size, random_state=1, stratify=self.y)
         else:
             self.X_train, self.X_test, self.y_train, self.y_test = np.copy(self.X), np.copy(self.X), np.copy(self.y), np.copy(self.y)
 
@@ -33,17 +34,36 @@ class Optimization(ElementwiseProblem):
         xu_binary = [1] * n_variable
 
         super().__init__(n_var=n_variable, n_obj=objectives,
-                         n_constr=0, xl=xl_binary, xu=xu_binary, **kwargs)
+                         n_constr=1, xl=xl_binary, xu=xu_binary, **kwargs)
+        # n_constr=1
+
+    # def predict(self, X, selected_features, ensemble):
+    #     predictions = np.array([member_clf.predict(X) for member_clf in ensemble])
+    #     # predictions = np.array([member_clf.predict(X) for member_clf, sf in zip(ensemble, selected_features)])
+    #     prediction = np.squeeze(mode(predictions, axis=0)[0])
+    #     print(self.classes_[prediction])
+    #     return self.classes_[prediction]
 
     def predict(self, X, selected_features, ensemble):
-        predictions = np.array([member_clf.predict(X[:, sf]) for member_clf, sf in zip(ensemble, selected_features)])
-        prediction = np.squeeze(mode(predictions, axis=0)[0])
-        return self.classes_[prediction]
+        """ Predict the class of each sample in X. """
+        n_samples = X.shape[0]
+        n_trees = len(ensemble)
+        # print(self.forest)
+        predictions = np.empty([n_trees, n_samples])
+        for i in range(n_trees):
+            predictions[i] = ensemble[i].predict(X)
+        # print(predictions)
+        # print(mode(predictions)[0][0])
+
+        return mode(predictions)[0][0]
 
     # x: a two dimensional matrix where each row is a point to evaluate and each column a variable
-    def validation(self, x, classes=None):
+    def validation(self, x, true_counter_max, classes=None):
         ensemble = []
         selected_features = []
+        if true_counter_max > self.max_features*2:
+            self.metric = [-10, -10]
+            return self.metric
         for result_opt in x:
             if result_opt > 0.5:
                 feature = True
@@ -65,7 +85,9 @@ class Optimization(ElementwiseProblem):
                 #     ensemble.append(candidate)
                 #     self.models[key] = candidate
 
-                candidate = clone(self.estimator).fit(self.X_train[:, sf], self.y_train)
+                # candidate = self.estimator.fit(self.X_train[:, sf], self.y_train)
+
+                candidate = self.estimator.fit(self.X_train, self.y_train, selected_features=sf)
                 ensemble.append(candidate)
 
         # If at least one element in selected_features is True
@@ -96,8 +118,17 @@ class Optimization(ElementwiseProblem):
         return self.metric
 
     def _evaluate(self, x, out, *args, **kwargs):
-        scores = self.validation(x)
-        # print(x, scores)
+        # print(x)
+        # Calculate how many features were selected
+        all_features = np.reshape(x, (self.n_classifiers, self.n_features))
+        all_features[all_features > 0.5] = 1
+        all_features[all_features <= 0.5] = 0
+        true_counter_all = []
+        true_counter_all = np.sum(all_features, axis=1)
+        true_counter_max = np.max(true_counter_all)
+
+        scores = self.validation(x, true_counter_max)
+        # print(true_counter_max, scores)
 
         # Function F is always minimize, but the minus sign (-) before F means maximize
         f1 = -1 * scores[0]
@@ -106,7 +137,10 @@ class Optimization(ElementwiseProblem):
         out["F"] = f1
 
         # Function constraint to select specific numbers of features:
-        # number = int((1 - self.scale_features) * self.n_features)
-        # out["G"] = (self.n_features - np.sum(x[2:]) - number) ** 2
-        # print(out["G"])
-        # print((x[2:]))
+        # Działa, ale długo chodzi i nie znajduje żadnego rozwiązania, bo zazwyczaj bierze więcej cech niż to max_features
+        # all_features = np.reshape(x, (self.n_classifiers, self.n_features))
+        # all_features[all_features > 0.5] = 1
+        # all_features[all_features <= 0.5] = 0
+        # true_counter_all = []
+        # true_counter_all = np.sum(all_features, axis=1)
+        out["G"] = true_counter_max - self.max_features*2

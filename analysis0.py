@@ -5,7 +5,7 @@ from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from methods.SOORF import SingleObjectiveOptimizationRandomForest
+from methods.SOORF_DT import SingleObjectiveOptimizationRandomForest_DecisionTree
 from methods.Random_FS import RandomFS
 from utils import result_tables, pairs_metrics_multi_grid_all, dataset_description, process_plot, pairs_metrics_multi_grid
 
@@ -20,16 +20,28 @@ base_estimator = DecisionTreeClassifier(random_state=1234)
 n_proccess = 5
 tree = DecisionTreeClassifier(max_features="sqrt")
 methods = {
-    "DT":
-        DecisionTreeClassifier(random_state=1234),
-    "RandomFS":
-        RandomFS(base_classifier=base_estimator, n_classifiers=10, bootstrap=False),
+    # "DT":
+    #     DecisionTreeClassifier(random_state=1234),
+    # "RandomFS":
+    #     RandomFS(base_classifier=tree, n_classifiers=10, bootstrap=True),
     "randomforest":
-        RandomForestClassifier_alt(n_estimators=10),
-    "RFDT":
-        RandomForestClassifier_alt_DT(base_classifier=tree, n_estimators=10),
-    "RF":
-        RandomForestClassifier(random_state=0, n_estimators=10, bootstrap=False),
+        RandomForestClassifier_alt(n_estimators=10, bootstrapping=False),
+    "randomforest_TRUE":
+        RandomForestClassifier_alt(n_estimators=10, bootstrapping=True),
+    # "RFDT":
+    #     RandomForestClassifier_alt_DT(base_classifier=tree, n_estimators=10, bootstrapping=True),
+    # "RF":
+    #     RandomForestClassifier(random_state=0, n_estimators=10, bootstrap=True, max_features="sqrt", criterion="entropy"),
+    "SOORF_DT0":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0, bootstrap=False),
+    "SOORF_DT25":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
+    "SOORF_DT50":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.5, bootstrap=False),
+    "SOORF_DT75":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.75, bootstrap=False),
+    "SOORF_DT90":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
 }
 
 """ WYNIKI z bootstrappingiem
@@ -38,7 +50,10 @@ methods = {
 """
 
 # method_names = ["RandomFS", "DT", "RF", "DE-Forest", "DE-Forest(BAC)"]
-method_names = ["DT", "RandomFS", "randomforest", "RFDT", "RF"]
+# method_names = ["DT", "RandomFS", "randomforest", "RFDT", "RF"]
+# method_names = ["randomforest", "randomforest_TRUE", "SOORF_DT"]
+methods_names = methods.keys()
+# print(methods_names)
 
 metrics_alias = [
     "ACC",
@@ -49,8 +64,8 @@ metrics_alias = [
     "Specificity",
     "Precision"]
 
-DATASETS_DIR = "datasets/"
-# DATASETS_DIR = "d/"
+# DATASETS_DIR = "datasets/"
+DATASETS_DIR = "d/"
 dataset_paths = []
 for root, _, files in os.walk(DATASETS_DIR):
     print(root, files)

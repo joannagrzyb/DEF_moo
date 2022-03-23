@@ -18,7 +18,7 @@ class DecisionTreeClassifier(object):
     """
 
     def __init__(self, max_features=5, max_depth=10,
-                 min_samples_split=2):
+                 min_samples_split=2, selected_features=None):
         """
         Args:
             max_features: A function that controls the number of features to
@@ -33,19 +33,29 @@ class DecisionTreeClassifier(object):
         self.max_features = max_features
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
+        self.selected_features = selected_features
 
-    def fit(self, X, y):
+    def fit(self, X, y, selected_features=None):
         """ Builds the tree by chooseing decision rules for each node based on
         the data. """
 
         n_features = X.shape[1]
         # n_sub_features = int(self.max_features(n_features))
         n_sub_features = self.max_features
-        feature_indices = random.sample(range(n_features), n_sub_features)
+        feature_indices = []
+        if selected_features is not None:
+            # print(selected_features)
+            for f_id, feature in enumerate(selected_features):
+                # print(f_id, feature)
+                if feature:
+                    feature_indices.append(f_id)
+        else:
+            feature_indices = random.sample(range(n_features), n_sub_features)
         # print(n_sub_features, feature_indices)
 
         self.trunk = self.build_tree(X, y, feature_indices, 0)
         # print(self.trunk)
+        self.selected_features_indx = feature_indices
         return self
 
     def predict(self, X):

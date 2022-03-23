@@ -4,3 +4,7 @@ run:
 
 pdf:
 	cd article && pdflatex main.tex main.pdf
+
+analysis:
+	python -W ignore analysis0.py
+	cd article && pdflatex main.tex main.pdf

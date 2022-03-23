@@ -39,30 +39,22 @@ class RandomForestClassifier_alt(BaseEstimator):
         self.bootstrapping = bootstrapping
         self.forest = []
 
-    def partial_fit(self, X, y):
+    def partial_fit(self, X, y, classes=None):
         """ Creates a forest of decision trees using a random subset of data and
             features. """
+        self.X, self.y = X, y
+        # Check classes
+        self.classes_ = classes
+        if self.classes_ is None:
+            self.classes_, _ = np.unique(self.y, return_inverse=True)
+
         self.forest = []
+        self.selected_features_indx = []
         n_samples = len(y)
         n_sub_samples = round(n_samples*self.bootstrap)
 
-        # To jest potrzebne dla drzewa z sklearna
         n_features = X.shape[1]
         self.max_features = int(math.sqrt(n_features))
-
-        # for i in range(self.n_estimators):
-        #     shuffle_in_unison(X, y)
-        #     X_subset = X[:n_sub_samples]
-        #     y_subset = y[:n_sub_samples]
-        #
-        #     tree = DecisionTreeClassifier(max_features=self.max_features, max_depth=self.max_depth, min_samples_split=self.min_samples_split)
-        #     # czy tu powinno być clone? - nie da sie z tym clf
-        #     # tree.fit(X_subset, y_subset)
-        #     # self.forest.append(tree)
-        #     # print("TREE", tree.fit(X_subset, y_subset))
-        #     candidate = tree.fit(X_subset, y_subset)
-        #     # print(tree)
-        #     self.forest.append(candidate)
 
         n_sub_samples = round(n_samples*self.bootstrap)
 
@@ -78,6 +70,7 @@ class RandomForestClassifier_alt(BaseEstimator):
                 candidate = tree.fit(X, y)
 
             self.forest.append(candidate)
+            self.selected_features_indx.append(tree.selected_features_indx)
 
     def fit(self, X, y):
         self.forest = []
@@ -92,8 +85,29 @@ class RandomForestClassifier_alt(BaseEstimator):
         predictions = np.empty([n_trees, n_samples])
         for i in range(n_trees):
             predictions[i] = self.forest[i].predict(X)
+        # print(predictions)
+        # print(mode(predictions)[0][0])
 
         return mode(predictions)[0][0]
+
+    # def ensemble_support_matrix(self, X):
+    #     # Ensemble support matrix
+    #     return np.array([member_clf.predict_proba(X) for member_clf in self.forest])
+    #
+    # def predict(self, X):
+    #     # Prediction based on the Average Support Vectors
+    #     # ens_sup_matrix = self.ensemble_support_matrix(X)
+    #     # average_support = np.mean(ens_sup_matrix, axis=0)
+    #     # prediction = np.argmax(average_support, axis=1)
+    #     # return self.classes_[prediction]
+    #     # majority Voting
+    #     predictions = np.array([member_clf.predict(X) for member_clf in self.forest])
+    #     prediction = np.squeeze(mode(predictions, axis=0)[0])
+    #     return self.classes_[prediction]
+    #
+    # def predict_proba(self, X):
+    #     probas_ = [clf.predict_proba(X) for clf in self.forest]
+    #     return np.average(probas_, axis=0)
 
     def score(self, X, y):
         """ Return the accuracy of the prediction of X compared to y. """
