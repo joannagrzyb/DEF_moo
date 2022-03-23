@@ -20,9 +20,7 @@ class Optimization(ElementwiseProblem):
         self.metric_name = metric_name
         self.alpha = alpha
         self.max_features = max_features
-        # self.models = {}
 
-        # self.test_size = 0
         if self.test_size != 0:
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=self.test_size, random_state=1, stratify=self.y)
         else:
@@ -35,26 +33,14 @@ class Optimization(ElementwiseProblem):
 
         super().__init__(n_var=n_variable, n_obj=objectives,
                          n_constr=1, xl=xl_binary, xu=xu_binary, **kwargs)
-        # n_constr=1
-
-    # def predict(self, X, selected_features, ensemble):
-    #     predictions = np.array([member_clf.predict(X) for member_clf in ensemble])
-    #     # predictions = np.array([member_clf.predict(X) for member_clf, sf in zip(ensemble, selected_features)])
-    #     prediction = np.squeeze(mode(predictions, axis=0)[0])
-    #     print(self.classes_[prediction])
-    #     return self.classes_[prediction]
 
     def predict(self, X, selected_features, ensemble):
         """ Predict the class of each sample in X. """
         n_samples = X.shape[0]
         n_trees = len(ensemble)
-        # print(self.forest)
         predictions = np.empty([n_trees, n_samples])
         for i in range(n_trees):
             predictions[i] = ensemble[i].predict(X)
-        # print(predictions)
-        # print(mode(predictions)[0][0])
-
         return mode(predictions)[0][0]
 
     # x: a two dimensional matrix where each row is a point to evaluate and each column a variable
@@ -75,18 +61,6 @@ class Optimization(ElementwiseProblem):
         for sf in selected_features:
             # If at least one element in sf is True
             if True in sf:
-                # key = np.array2string(sf.astype(int), separator="")[1:-1]
-                # # print(key)
-                # if key in self.models.keys():
-                #     print("MEM")
-                #     ensemble.append(self.models[key])
-                # else:
-                #     candidate = clone(self.estimator).fit(self.X_train[:, sf], self.y_train)
-                #     ensemble.append(candidate)
-                #     self.models[key] = candidate
-
-                # candidate = self.estimator.fit(self.X_train[:, sf], self.y_train)
-
                 candidate = self.estimator.fit(self.X_train, self.y_train, selected_features=sf)
                 ensemble.append(candidate)
 
@@ -113,12 +87,9 @@ class Optimization(ElementwiseProblem):
             diversities = test_class.get_avg_pairwise(print_flag=False)
             correlation = (diversities[0] + 1) / 2
             self.metric = [self.alpha * accuracy + (1 - self.alpha) * correlation]
-            # print("METRIC")
-            # print(self.metric)
         return self.metric
 
     def _evaluate(self, x, out, *args, **kwargs):
-        # print(x)
         # Calculate how many features were selected
         all_features = np.reshape(x, (self.n_classifiers, self.n_features))
         all_features[all_features > 0.5] = 1
@@ -126,10 +97,7 @@ class Optimization(ElementwiseProblem):
         true_counter_all = []
         true_counter_all = np.sum(all_features, axis=1)
         true_counter_max = np.max(true_counter_all)
-
         scores = self.validation(x, true_counter_max)
-        # print(true_counter_max, scores)
-
         # Function F is always minimize, but the minus sign (-) before F means maximize
         f1 = -1 * scores[0]
         # f2 = -1 * scores[1]
@@ -138,9 +106,4 @@ class Optimization(ElementwiseProblem):
 
         # Function constraint to select specific numbers of features:
         # Działa, ale długo chodzi i nie znajduje żadnego rozwiązania, bo zazwyczaj bierze więcej cech niż to max_features
-        # all_features = np.reshape(x, (self.n_classifiers, self.n_features))
-        # all_features[all_features > 0.5] = 1
-        # all_features[all_features <= 0.5] = 0
-        # true_counter_all = []
-        # true_counter_all = np.sum(all_features, axis=1)
         out["G"] = true_counter_max - self.max_features*2
