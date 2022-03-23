@@ -57,8 +57,10 @@ methods = {
     #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.75, bootstrap=False),
     # "SOORF_DT90":
     #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
-    "SOORF_DT":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
+    # "SOORF_DT":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
+    "SOORF_DT_BP":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=True),
 }
 # test_size to parametr który zawiera informację jaka cześć zbioru X jest przeznaczona na testowanie. gdy test_size=0, wtedy jest overfitting
 # randomforest z bootstrappingiem i bez, nie ma dużej różnicy
@@ -156,8 +158,8 @@ def compute(dataset_id, dataset_path):
                 # print(diversity[clf_id, fold_id])
 
                 end_method = time.time() - start_method
-                logging.info("DONE METHOD %s - %s (Time: %d [s])" % (clf_name, dataset_path, end_method))
-                print("DONE METHOD %s - %s (Time: %d [s])" % (clf_name, dataset_path, end_method))
+                logging.info("DONE FOLD %d METHOD %s - %s (Time: %d [s])" % (fold_id, clf_name, dataset_path, end_method))
+                print("DONE FOLD %d METHOD %s - %s (Time: %d [s])" % (fold_id, clf_name, dataset_path, end_method))
 
         # Save results to csv
         for clf_id, clf_name in enumerate(methods):

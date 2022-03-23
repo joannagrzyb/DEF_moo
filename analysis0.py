@@ -24,24 +24,28 @@ methods = {
     #     DecisionTreeClassifier(random_state=1234),
     # "RandomFS":
     #     RandomFS(base_classifier=tree, n_classifiers=10, bootstrap=True),
-    "randomforest":
-        RandomForestClassifier_alt(n_estimators=10, bootstrapping=False),
+    # "randomforest":
+    #     RandomForestClassifier_alt(n_estimators=10, bootstrapping=False),
     "randomforest_TRUE":
         RandomForestClassifier_alt(n_estimators=10, bootstrapping=True),
     # "RFDT":
     #     RandomForestClassifier_alt_DT(base_classifier=tree, n_estimators=10, bootstrapping=True),
     # "RF":
     #     RandomForestClassifier(random_state=0, n_estimators=10, bootstrap=True, max_features="sqrt", criterion="entropy"),
-    "SOORF_DT0":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0, bootstrap=False),
-    "SOORF_DT25":
+    # "SOORF_DT0":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0, bootstrap=False),
+    # "SOORF_DT25":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
+    # "SOORF_DT50":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.5, bootstrap=False),
+    # "SOORF_DT75":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.75, bootstrap=False),
+    # "SOORF_DT90":
+    #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
+    "SOORF_DT":
         SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
-    "SOORF_DT50":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.5, bootstrap=False),
-    "SOORF_DT75":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.75, bootstrap=False),
-    "SOORF_DT90":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
+    "SOORF_DT_BP":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=True),
 }
 
 """ WYNIKI z bootstrappingiem

@@ -78,10 +78,16 @@ class SingleObjectiveOptimizationRandomForest_DecisionTree(BaseEstimator):
             # Parallelization - run program on n_proccess (threads)
             # pool = Pool(self.n_proccess)
             # Create optimization problem
-            problem = BootstrapOptimization(X, y, X_b, y_b, test_size=self.test_size, estimator=self.base_classifier, n_features=n_features, n_classifiers=self.n_classifiers, metric_name=self.metric_name, alpha=self.alpha)
+            # print(X_b)
+            problem = BootstrapOptimization(X, y, X_b, y_b, test_size=self.test_size, estimator=tree, n_features=n_features, n_classifiers=self.n_classifiers, metric_name=self.metric_name, alpha=self.alpha, max_features=self.max_features)
+            # Losowa populacja inicjująca
+            # self.initial_population = np.random.random((100, (self.n_classifiers*n_features)))
+            # Populacja początkowa za pomocą sampling LHS()
+            self.initial_population = LHS()
+
             algorithm = DE(
                 pop_size=self.p_size,
-                sampling=LHS(),
+                sampling=self.initial_population,
                 variant="DE/rand/1/bin",
                 CR=0.9,
                 dither="vector",
@@ -98,7 +104,6 @@ class SingleObjectiveOptimizationRandomForest_DecisionTree(BaseEstimator):
             # Populacja początkowa za pomocą sampling LHS()
             self.initial_population = LHS()
 
-            print(self.initial_population)
             algorithm = DE(
                 pop_size=self.p_size,
                 sampling=self.initial_population,
@@ -137,7 +142,7 @@ class SingleObjectiveOptimizationRandomForest_DecisionTree(BaseEstimator):
             if self.bootstrap is True:
                 X_train = X_b[id]
                 y_train = y_b[id]
-                candidate = clone(self.base_classifier).fit(X_train[:, sf], y_train)
+                candidate = tree.fit(X_train, y_train, selected_features=sf)
                 # Add candidate to the ensemble
                 self.ensemble.append(candidate)
             else:
