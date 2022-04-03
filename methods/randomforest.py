@@ -57,7 +57,6 @@ class RandomForestClassifier_alt(BaseEstimator):
         self.max_features = int(math.sqrt(n_features))
 
         n_sub_samples = round(n_samples*self.bootstrap)
-
         for i in range(self.n_estimators):
             # print(X.shape[1])
             shuffle_in_unison(X, y)
@@ -81,13 +80,9 @@ class RandomForestClassifier_alt(BaseEstimator):
         """ Predict the class of each sample in X. """
         n_samples = X.shape[0]
         n_trees = len(self.forest)
-        # print(self.forest)
         predictions = np.empty([n_trees, n_samples])
         for i in range(n_trees):
             predictions[i] = self.forest[i].predict(X)
-        # print(predictions)
-        # print(mode(predictions)[0][0])
-
         return mode(predictions)[0][0]
 
     # def ensemble_support_matrix(self, X):

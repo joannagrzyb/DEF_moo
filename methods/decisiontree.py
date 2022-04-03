@@ -39,22 +39,19 @@ class DecisionTreeClassifier(object):
         """ Builds the tree by chooseing decision rules for each node based on
         the data. """
 
+        # seed=None means random seed for random function
+        random.seed(None)
         n_features = X.shape[1]
-        # n_sub_features = int(self.max_features(n_features))
         n_sub_features = self.max_features
         feature_indices = []
         if selected_features is not None:
-            # print(selected_features)
             for f_id, feature in enumerate(selected_features):
-                # print(f_id, feature)
+                # TODO: tu jest taki problem, że te cechy są w innej kolejności, nie wiem czy to ma znaczenie
                 if feature:
                     feature_indices.append(f_id)
         else:
             feature_indices = random.sample(range(n_features), n_sub_features)
-        # print(n_sub_features, feature_indices)
-
         self.trunk = self.build_tree(X, y, feature_indices, 0)
-        # print(self.trunk)
         self.selected_features_indx = feature_indices
         return self
 

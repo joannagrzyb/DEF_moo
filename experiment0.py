@@ -25,10 +25,10 @@ from sklearn.feature_selection import SelectFromModel
 
 from methods.SOORF_DT import SingleObjectiveOptimizationRandomForest_DecisionTree
 
+
 """
 Datasets are from KEEL repository.
 """
-
 
 base_estimator = DecisionTreeClassifier(random_state=1234)
 
@@ -59,8 +59,8 @@ methods = {
     #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.9, bootstrap=False),
     # "SOORF_DT":
     #     SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
-    "SOORF_DT_BP":
-        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=True),
+    "SOORF_DT":
+        SingleObjectiveOptimizationRandomForest_DecisionTree(base_classifier=base_estimator, n_classifiers=10, test_size=0.25, bootstrap=False),
 }
 # test_size to parametr który zawiera informację jaka cześć zbioru X jest przeznaczona na testowanie. gdy test_size=0, wtedy jest overfitting
 # randomforest z bootstrappingiem i bez, nie ma dużej różnicy
@@ -128,7 +128,7 @@ def compute(dataset_id, dataset_path):
                 start_method = time.time()
                 clf = clone(methods[clf_name])
                 if clf_name == "SOORF_DT":
-                    clf.set_init_pop(X_train, selected_features_indx_RF)
+                    clf.set_init_pop(X_train, selected_features_indx_RF.copy())
                 clf.fit(X_train, y_train)
                 y_pred = clf.predict(X_test)
                 # if clf_name == "RF":
@@ -136,10 +136,9 @@ def compute(dataset_id, dataset_path):
                 #     X_new = model.transform(X)
                 #     print(X_new.shape)
                 if clf_name == "randomforest_TRUE":
-                    selected_features_indx_RF = clf.selected_features_indx
+                    selected_features_indx_RF = clf.selected_features_indx.copy()
                 else:
                     selected_features_indx_RF = None
-
                 # Scores for each metric
                 for metric_id, metric in enumerate(metrics):
                     if metric_id >= 2:
@@ -156,7 +155,7 @@ def compute(dataset_id, dataset_path):
                 # else:
                 #     diversity[clf_id, fold_id] = None
                 # print(diversity[clf_id, fold_id])
-
+                print(scores[:, clf_id, fold_id])
                 end_method = time.time() - start_method
                 logging.info("DONE FOLD %d METHOD %s - %s (Time: %d [s])" % (fold_id, clf_name, dataset_path, end_method))
                 print("DONE FOLD %d METHOD %s - %s (Time: %d [s])" % (fold_id, clf_name, dataset_path, end_method))

@@ -47,8 +47,8 @@ class Optimization(ElementwiseProblem):
     def validation(self, x, true_counter_max, classes=None):
         ensemble = []
         selected_features = []
-        if true_counter_max > self.max_features*2:
-            self.metric = [-10, -10]
+        if true_counter_max > self.max_features:
+            self.metric = [-10]
             return self.metric
         for result_opt in x:
             if result_opt > 0.5:
@@ -97,13 +97,14 @@ class Optimization(ElementwiseProblem):
         true_counter_all = []
         true_counter_all = np.sum(all_features, axis=1)
         true_counter_max = np.max(true_counter_all)
+
         scores = self.validation(x, true_counter_max)
+
         # Function F is always minimize, but the minus sign (-) before F means maximize
         f1 = -1 * scores[0]
         # f2 = -1 * scores[1]
         # out["F"] = anp.column_stack(np.array([f1, f2]))
         out["F"] = f1
 
-        # Function constraint to select specific numbers of features:
-        # Działa, ale długo chodzi i nie znajduje żadnego rozwiązania, bo zazwyczaj bierze więcej cech niż to max_features
-        out["G"] = true_counter_max - self.max_features*2
+        # Function constraint to select only max_features:
+        out["G"] = true_counter_max - self.max_features
